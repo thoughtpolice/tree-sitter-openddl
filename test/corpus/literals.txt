@@ -1,0 +1,38 @@
+==================
+dec/hex/bin/oct/char
+==================
+
+v { f {10000, 0xFFFF, 0b0001, 0o1234} }
+
+---
+
+(module
+  (structure (identifier)
+    (structure (data_type)
+      (data_list (float) (float) (float) (float)))))
+
+==================
+string
+==================
+
+v { s {"whoa"} }
+
+---
+
+(module
+  (structure (identifier)
+    (structure (data_type)
+      (data_list (string)))))
+
+==================
+bool
+==================
+
+v { b {true,false} }
+
+---
+
+(module
+  (structure (identifier)
+    (structure (data_type)
+      (data_list (bool) (bool)))))

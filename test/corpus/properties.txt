@@ -1,0 +1,43 @@
+=============
+simple
+=============
+
+M (a = 2, b = 'c', c = 3.4, d = true, f = "hi") { }
+
+---
+
+(module
+  (structure (identifier)
+    (property (identifier) (float))
+    (property (identifier) (integer))
+    (property (identifier) (float))
+    (property (identifier) (bool))
+    (property (identifier) (string))))
+
+=============
+data types
+=============
+
+M (a = u64) { }
+
+---
+
+(module
+  (structure (identifier)
+    (property (identifier) (data_type))))
+
+============
+references
+============
+
+M (a = $t, b = %t, c = $t%x, d = %t%x, e = null) { }
+
+---
+
+(module
+  (structure (identifier)
+    (property (identifier) (reference (identifier)))
+    (property (identifier) (reference (identifier)))
+    (property (identifier) (reference (identifier) (identifier)))
+    (property (identifier) (reference (identifier) (identifier)))
+    (property (identifier) (reference))))

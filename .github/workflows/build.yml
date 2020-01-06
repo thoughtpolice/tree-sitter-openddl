@@ -1,0 +1,22 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+    name: Build and Test Job
+    timeout-minutes: 360
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v1
+
+    - name: Install Nix
+      uses: cachix/install-nix-action@v6
+
+    - name: nix-build && test
+      run: nix-build --no-link

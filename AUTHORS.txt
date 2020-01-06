@@ -1,0 +1,7 @@
+Creator, primary target of blame:
+
+  Austin Seipp <aseipp@pobox.com>
+
+Some of the files under `examples/` (used during first development of the
+grammar) come from the OpenDDL/OpenGEX documentation. OpenDDL (and OpenGEX)
+were both designed by Eric Lengyel.
