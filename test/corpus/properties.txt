@@ -24,7 +24,7 @@ M (a = u64) { }
 
 (module
   (structure (identifier)
-    (property (identifier) (data_type))))
+    (property (identifier) (data_type (type_uint64)))))
 
 ============
 references

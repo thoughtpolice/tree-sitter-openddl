@@ -2,14 +2,37 @@
 dec/hex/bin/oct/char
 ==================
 
-v { f {10000, 0xFFFF, 0b0001, 0o1234} }
+v { u16 {-123, +0xABC, 0b00001, 0o123, 'c'} }
 
 ---
 
 (module
   (structure (identifier)
-    (structure (data_type)
-      (data_list (float) (float) (float) (float)))))
+    (structure (type_uint16)
+      (integer)
+      (integer)
+      (integer)
+      (integer)
+      (integer))))
+
+==================
+float
+==================
+
+v { f32 { 0, +0.1, -.1, -.2e+1234, 0xABC, 0b0001, 0o123 } }
+
+---
+
+(module
+  (structure (identifier)
+    (structure (type_float32)
+      (float)
+      (float)
+      (float)
+      (float)
+      (float)
+      (float)
+      (float))))
 
 ==================
 string
@@ -21,8 +44,8 @@ v { s {"whoa"} }
 
 (module
   (structure (identifier)
-    (structure (data_type)
-      (data_list (string)))))
+    (structure (type_string)
+      (string))))
 
 ==================
 bool
@@ -34,5 +57,6 @@ v { b {true,false} }
 
 (module
   (structure (identifier)
-    (structure (data_type)
-      (data_list (bool) (bool)))))
+    (structure (type_bool)
+      (bool)
+      (bool))))

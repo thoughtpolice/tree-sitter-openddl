@@ -1,7 +1,36 @@
 const
-  // combinators
+  // simple combinators
 
   sep1 = (sep, rule) => seq(rule, repeat(seq(sep, rule)))
+
+  // the upstream openddl.org grammar leaves an ambiguity in in the way values
+  // of specific types get parsed; there is no way for example, to disambiguate
+  // floats and integers, other than the type that is found by parsing the
+  // structure definition. therefore, this combinator composes several others:
+  // it explicitly parses for a type, and from that choice, parses out the right
+  // values with the right parsers.
+
+  arrayForType  = ($, p) => field('datum', seq('{', sep1(',', p), '}')),
+
+  parseByType = ($, type_parser, array_parser) => {
+    return seq(
+      field('type', type_parser),
+      choice(
+        // choice 1: an array declaration with sub-arrays
+        seq(
+          '[', field('size', $.integer), ']',
+          field('name', optional($.name)),
+          '{', sep1(',', field('data', alias(array_parser, $.array)), '}'), '}'
+        ),
+
+        // choice 2: normal, unbounded list of whatever size
+        seq(
+          field('name', optional($.name)),
+          field('data', alias(array_parser, $.array)),
+        )
+      ),
+    );
+  }
 
   // constant, non-production rules
 
@@ -43,60 +72,51 @@ module.exports = grammar({
 
   word:   $ => $.identifier,
   extras: $ => [ $.comment, /\s|\\n/ ],
-  inline: $ => [ $.deriv_struct, $.prim_struct, $.name ],
+  inline: $ => [ $.prim_struct, $.name ],
 
   rules: {
 
     // top-level stuff
 
     module: $ => repeat(field('struct', $.structure)),
-
     structure: $ => choice(
+      // primitive types
       $.prim_struct,
-      $.deriv_struct,
+
+      // derivative types
+      seq(
+        field('ident', $.identifier),
+        field('name',  optional($.name)),
+        field('props', optional(seq('(', sep1(',', $.property), ')'))),
+        field('struct', seq('{', repeat($.structure), '}')),
+      ),
     ),
 
-    prim_struct: $ => seq(
-      field('type', $.data_type),
-      choice(
-        seq(
-          '[', field('size', $.integer), ']',
-          field('name', optional($.name)),
-          '{', field('data', $.data_array_list), '}'
-        ),
-        seq(
-          field('name', optional($.name)),
-          '{', field('data', $.data_list), '}'
-        ),
-      )
+    prim_struct: $ => choice(
+      parseByType($, $.type_bool,    $.bool_array),
+      parseByType($, $.type_int8,    $.integer_array),
+      parseByType($, $.type_int16,   $.integer_array),
+      parseByType($, $.type_int32,   $.integer_array),
+      parseByType($, $.type_int64,   $.integer_array),
+      parseByType($, $.type_uint8,   $.integer_array),
+      parseByType($, $.type_uint16,  $.integer_array),
+      parseByType($, $.type_uint32,  $.integer_array),
+      parseByType($, $.type_uint64,  $.integer_array),
+      parseByType($, $.type_float16, $.float_array),
+      parseByType($, $.type_float32, $.float_array),
+      parseByType($, $.type_float64, $.float_array),
+      parseByType($, $.type_string,  $.string_array),
+      parseByType($, $.type_ref,     $.ref_array),
+      parseByType($, $.type_type,    $.type_array),
     ),
 
-    deriv_struct: $ => seq(
-      field('ident', $.identifier),
-      field('name',  optional($.name)),
-      field('props', optional(seq('(', sep1(',', $.property), ')'))),
-      field('entries', seq('{', repeat($.structure), '}')),
-    ),
-
-    // data lists
-
-    data_list: $ => choice(
-      sep1(',', $.bool),
-      sep1(',', $.integer),
-      sep1(',', $.float),
-      sep1(',', $.string),
-      sep1(',', $.reference),
-      sep1(',', $.data_type),
-    ),
-
-    data_array_list: $ => choice(
-      sep1(',', seq('{', sep1(',', $.bool), '}')),
-      sep1(',', seq('{', sep1(',', $.integer), '}')),
-      sep1(',', seq('{', sep1(',', $.float), '}')),
-      sep1(',', seq('{', sep1(',', $.string), '}')),
-      sep1(',', seq('{', sep1(',', $.reference), '}')),
-      sep1(',', seq('{', sep1(',', $.data_type), '}')),
-    ),
+    // parser things
+    bool_array:    $ => arrayForType($, $.bool),
+    integer_array: $ => arrayForType($, $.integer),
+    float_array:   $ => arrayForType($, $.float),
+    string_array:  $ => arrayForType($, $.string),
+    ref_array:     $ => arrayForType($, $.reference),
+    type_array:    $ => arrayForType($, $.data_type),
 
     // basics
 
@@ -136,51 +156,44 @@ module.exports = grammar({
     // types
 
     data_type: $ => choice(
-      $._type_bool,
-      $._type_int8,
-      $._type_int16,
-      $._type_int32,
-      $._type_int64,
-      $._type_uint8,
-      $._type_uint16,
-      $._type_uint32,
-      $._type_uint64,
-      $._type_float16,
-      $._type_float32,
-      $._type_float64,
-      $._type_string,
-      $._type_ref,
-      $._type_type,
+      $.type_bool,
+      $.type_int8,
+      $.type_int16,
+      $.type_int32,
+      $.type_int64,
+      $.type_uint8,
+      $.type_uint16,
+      $.type_uint32,
+      $.type_uint64,
+      $.type_float16,
+      $.type_float32,
+      $.type_float64,
+      $.type_string,
+      $.type_ref,
+      $.type_type,
     ),
 
-    _type_bool:    $ => choice('bool', 'b'),
+    type_bool:    $ => choice('bool', 'b'),
 
-    _type_int8:    $ => choice('int8',  'i8'),
-    _type_int16:   $ => choice('int16', 'i16'),
-    _type_int32:   $ => choice('int32', 'i32'),
-    _type_int64:   $ => choice('int64', 'i64'),
+    type_int8:    $ => choice('int8',  'i8'),
+    type_int16:   $ => choice('int16', 'i16'),
+    type_int32:   $ => choice('int32', 'i32'),
+    type_int64:   $ => choice('int64', 'i64'),
 
-    _type_uint8:   $ => choice('unsigned_int8',  'u8'),
-    _type_uint16:  $ => choice('unsigned_int16', 'u16'),
-    _type_uint32:  $ => choice('unsigned_int32', 'u32'),
-    _type_uint64:  $ => choice('unsigned_int64', 'u64'),
+    type_uint8:   $ => choice('unsigned_int8',  'u8'),
+    type_uint16:  $ => choice('unsigned_int16', 'u16'),
+    type_uint32:  $ => choice('unsigned_int32', 'u32'),
+    type_uint64:  $ => choice('unsigned_int64', 'u64'),
 
-    _type_float16: $ => choice('half',   'float16', 'h', 'f16'),
-    _type_float32: $ => choice('float',  'float32', 'f', 'f32'),
-    _type_float64: $ => choice('double', 'float64', 'd', 'f64'),
+    type_float16: $ => choice('half',   'float16', 'h', 'f16'),
+    type_float32: $ => choice('float',  'float32', 'f', 'f32'),
+    type_float64: $ => choice('double', 'float64', 'd', 'f64'),
 
-    _type_string:  $ => choice('string', 's'),
-    _type_ref:     $ => choice('ref',    'r'),
-    _type_type:    $ => choice('type',   't'),
+    type_string:  $ => choice('string', 's'),
+    type_ref:     $ => choice('ref',    'r'),
+    type_type:    $ => choice('type',   't'),
 
     // literals
-
-    literal: $ => choice(
-      $.bool,
-      $.integer,
-      $.float,
-      $.string,
-    ),
 
     bool: $ => choice('true', 'false'),
 
