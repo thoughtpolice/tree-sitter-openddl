@@ -9,11 +9,12 @@ v { u16 {-123, +0xABC, 0b00001, 0o123, 'c'} }
 (module
   (structure (identifier)
     (structure (type_uint16)
-      (integer)
-      (integer)
-      (integer)
-      (integer)
-      (integer))))
+      (array
+        (integer)
+        (integer)
+        (integer)
+        (integer)
+        (integer)))))
 
 ==================
 float
@@ -26,13 +27,14 @@ v { f32 { 0, +0.1, -.1, -.2e+1234, 0xABC, 0b0001, 0o123 } }
 (module
   (structure (identifier)
     (structure (type_float32)
-      (float)
-      (float)
-      (float)
-      (float)
-      (float)
-      (float)
-      (float))))
+      (array
+        (float)
+        (float)
+        (float)
+        (float)
+        (float)
+        (float)
+        (float)))))
 
 ==================
 string
@@ -45,7 +47,8 @@ v { s {"whoa"} }
 (module
   (structure (identifier)
     (structure (type_string)
-      (string))))
+      (array
+        (string)))))
 
 ==================
 bool
@@ -58,5 +61,6 @@ v { b {true,false} }
 (module
   (structure (identifier)
     (structure (type_bool)
-      (bool)
-      (bool))))
+      (array
+        (bool)
+        (bool)))))

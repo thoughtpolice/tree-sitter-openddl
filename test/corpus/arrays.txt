@@ -10,9 +10,11 @@ M { f32[3] { { 1, 2, 3 }, { 1, 2, 3 } } }
   (structure (identifier)
     (structure (type_float32)
       (integer)
-      (float)
-      (float)
-      (float)
-      (float)
-      (float)
-      (float))))
+      (array
+        (float)
+        (float)
+        (float))
+      (array
+        (float)
+        (float)
+        (float)))))
